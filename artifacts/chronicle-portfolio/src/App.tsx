@@ -35,8 +35,13 @@ const noorLiveUrl = 'https://noor-studio-5361.ai.studio/';
 const movieZoneLiveUrl = 'https://movie-zone-1a8i-alpha.vercel.app/home';
 
 // Base URL resolution to guarantee all assets load in every deployment environment
-const rawBase = import.meta.env.BASE_URL || '/';
-const baseUrl = rawBase.endsWith('/') ? rawBase : `${rawBase}/`;
+function getCleanBase(): string {
+  const raw = import.meta.env.BASE_URL || '/';
+  if (raw === './' || raw === '.') return '/';
+  return raw.endsWith('/') ? raw : `${raw}/`;
+}
+
+const baseUrl = getCleanBase();
 
 export function assetUrl(path: string): string {
   if (!path) return '';
@@ -938,10 +943,13 @@ function Router() {
 }
 
 function App() {
+  const raw = import.meta.env.BASE_URL || '';
+  const routerBase = raw === '/' || raw === './' || raw === '.' ? '' : raw.replace(/\/$/, '');
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
+        <WouterRouter base={routerBase}>
           <Router />
         </WouterRouter>
         <Toaster />
