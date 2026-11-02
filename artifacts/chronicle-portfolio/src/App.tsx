@@ -18,6 +18,11 @@ import {
   Layers,
   Sparkles,
   Flame,
+  GraduationCap,
+  ExternalLink,
+  ChevronLeft,
+  ChevronRight,
+  Image as ImageIcon,
 } from 'lucide-react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ErrorBoundary } from '@/components/error-boundary';
@@ -33,6 +38,8 @@ const githubUrl = 'https://github.com/Kizitofahad-rgb';
 const linkedinUrl = 'https://www.linkedin.com/in/kizito-fahad-439a793a0';
 const noorLiveUrl = 'https://noor-studio-5361.ai.studio/';
 const movieZoneLiveUrl = 'https://movie-zone-1a8i-alpha.vercel.app/home';
+const makerereLiveUrl = 'https://cs.mak.ac.ug';
+const makerereCocisUrl = 'https://cocis.mak.ac.ug';
 
 // Base URL resolution to guarantee all assets load in every deployment environment
 function getCleanBase(): string {
@@ -64,6 +71,12 @@ type Certificate = {
   date?: string;
 };
 
+type ProjectGalleryItem = {
+  src: string;
+  title: string;
+  caption: string;
+};
+
 type Project = {
   id: string;
   name: string;
@@ -74,9 +87,14 @@ type Project = {
   tech: string;
   image: string;
   liveUrl?: string;
+  secondaryUrl?: string;
+  secondaryUrlLabel?: string;
   featured?: boolean;
   specs: string[];
   note?: string;
+  institution?: string;
+  contributionRole?: string;
+  gallery?: ProjectGalleryItem[];
 };
 
 const certificates: Certificate[] = [
@@ -114,6 +132,58 @@ const certificates: Certificate[] = [
 const projects: Project[] = [
   {
     id: '01',
+    name: 'Makerere CS Department',
+    house: 'House of the Ivory Tower',
+    tagline: 'Official Department of Computer Science Web Platform · Makerere University (CoCIS)',
+    type: 'Participated in the engineering, UI architecture, and design of the official Makerere University Department of Computer Science web platform. Built the responsive departmental news and announcements ecosystem, graduate fellow vacancy portal, application workflow interfaces, and interconnected CoCIS university navigation.',
+    status: 'INSTITUTIONAL // SHIPPED',
+    tech: 'React / Next.js · TypeScript · Academic UI · Responsive Systems',
+    image: 'assets/projects/mak-cs-news.png',
+    liveUrl: makerereLiveUrl,
+    secondaryUrl: makerereCocisUrl,
+    secondaryUrlLabel: 'CoCIS College Portal',
+    featured: true,
+    institution: 'Makerere University · CoCIS',
+    contributionRole: 'Frontend Engineering & UI Design Contributor',
+    specs: [
+      'Department News & Announcements Hub',
+      'Graduate Fellows Vacancy Portal',
+      'Category Filters & Live Search',
+      'Application Procedure & Action Triggers',
+      'CoCIS College Navigation Ecosystem',
+      'Responsive Layout & Dark Mode Switch',
+    ],
+    note: 'Helped build and design core subsystems in the portal: the news and events index with category filtering, the detailed Graduate Fellow vacancy notices, email submission actions, and responsive layout across devices.',
+    gallery: [
+      {
+        src: 'assets/projects/mak-cs-news.png',
+        title: 'Department News & Announcement Hub',
+        caption: 'Engineered the main news feed with category pills (News, Opportunity, Event), keyword search, and featured story cards.',
+      },
+      {
+        src: 'assets/projects/mak-cs-article.png',
+        title: 'Graduate Fellows Opportunity Layout',
+        caption: 'Built the vacancy layout with PhD/Masters eligibility, role definition, and CoCIS faculty sidebar integration.',
+      },
+      {
+        src: 'assets/projects/mak-cs-application.png',
+        title: 'Emoluments, Benefits & Application Action',
+        caption: 'Designed application requirement specifications, deadline badges, and direct mail action triggers.',
+      },
+      {
+        src: 'assets/projects/mak-cs-grid.png',
+        title: 'Multi-Card Academic Story Grid',
+        caption: 'Responsive card layouts for departmental highlights, Earthshot Prize finalists, and leadership announcements.',
+      },
+      {
+        src: 'assets/projects/mak-cs-portal.png',
+        title: 'Header Navigation & University Breadcrumbs',
+        caption: 'Official Makerere crest integration, quick links to e-learning/timetables, and dark mode toggles.',
+      },
+    ],
+  },
+  {
+    id: '02',
     name: 'Noor',
     house: 'House of the Sanctuary',
     tagline: 'The Quran & Mindfulness Sanctuary · Word-by-Word Tajweed & Reflections',
@@ -127,7 +197,7 @@ const projects: Project[] = [
     note: 'Vibe coded for personal Quranic study, spiritual clarity, and daily peace.',
   },
   {
-    id: '02',
+    id: '03',
     name: 'Movie Zone',
     house: 'House of the Silver Screen',
     tagline: 'Cinematic Discovery Portal & Fluid Media Curator',
@@ -141,7 +211,7 @@ const projects: Project[] = [
     note: 'Vibe coded for personal cinematic exploration and sheer enjoyment.',
   },
   {
-    id: '03',
+    id: '04',
     name: 'Smart Ride UG',
     house: 'House of the Iron Roads',
     tagline: 'Hyper-Local Urban Spatial Mobility System',
@@ -152,7 +222,7 @@ const projects: Project[] = [
     specs: ['Offline GPS Caching', 'Kampala Node Matrix', 'Fare Estimation Engine'],
   },
   {
-    id: '04',
+    id: '05',
     name: 'ILES',
     house: 'House of the Citadel Scholars',
     tagline: 'Human-Centered Educational Knowledge Lattice',
@@ -170,9 +240,15 @@ function AppShell() {
   const [audioOn, setAudioOn] = useState(false);
   const [activeCertificate, setActiveCertificate] = useState<Certificate | null>(null);
   const [inspectProject, setInspectProject] = useState<Project | null>(null);
+  const [galleryIdx, setGalleryIdx] = useState(0);
   const [copied, setCopied] = useState(false);
   const [notice, setNotice] = useState('');
   const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const openProjectInspect = (proj: Project) => {
+    setInspectProject(proj);
+    setGalleryIdx(0);
+  };
 
   // Background Audio: Auto-plays seamlessly upon entering the Chronicle
   useEffect(() => {
@@ -377,6 +453,14 @@ function AppShell() {
               <a className="gold-button" href="#quests" data-testid="link-hero-quests">
                 Survey The Quests <ArrowDown size={15} />
               </a>
+              <button
+                type="button"
+                className="outline-button border-[#e7b73d]/60 text-[#ffd875] bg-[#e7b73d]/10 hover:bg-[#e7b73d]/25 flex items-center gap-1.5 transition-all"
+                onClick={() => openProjectInspect(projects[0])}
+                data-testid="button-hero-makerere"
+              >
+                <GraduationCap size={15} className="text-[#e7b73d]" /> Makerere CS Platform
+              </button>
               <a
                 className="outline-button"
                 href={noorLiveUrl}
@@ -408,7 +492,7 @@ function AppShell() {
 
             <div className="hero-telemetry">
               <div className="telemetry-item">
-                <strong>04</strong>
+                <strong>05</strong>
                 <span>Active Realms</span>
               </div>
               <div className="telemetry-item">
@@ -416,8 +500,8 @@ function AppShell() {
                 <span>Honor Scrolls</span>
               </div>
               <div className="telemetry-item">
-                <strong>FORGING</strong>
-                <span>Robotics & Embedded</span>
+                <strong>MAK CS</strong>
+                <span>Institutional Shipped</span>
               </div>
             </div>
           </div>
@@ -509,6 +593,25 @@ function AppShell() {
                 </div>
                 <p className="text-sm text-[#b5aa93] leading-relaxed font-prose">
                   Deeply trained through OpenAI Academy and Anthropic Claude certifications — applying intelligent reasoning directly to real user workflows.
+                </p>
+              </div>
+            </Card3D>
+
+            <Card3D maxTilt={6} glowColor="rgba(231, 183, 61, 0.35)">
+              <div className="p-6 rounded bg-[#0d1224]/90 border border-[#e7b73d]/40 backdrop-blur-md">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2 rounded bg-[#e7b73d]/15 text-[#ffd875] border border-[#e7b73d]/40">
+                    <GraduationCap size={18} />
+                  </div>
+                  <div>
+                    <h3 className="font-serif font-bold text-white text-lg tracking-wide uppercase">
+                      Makerere University Systems
+                    </h3>
+                    <span className="text-[10px] font-mono text-[#ffd875] uppercase tracking-wider">Department of Computer Science (CoCIS)</span>
+                  </div>
+                </div>
+                <p className="text-sm text-[#b5aa93] leading-relaxed font-prose">
+                  Participated in designing and building the official Makerere Computer Science platform, creating news & announcement architectures, graduate fellow vacancy hubs, and application workflows.
                 </p>
               </div>
             </Card3D>
@@ -662,7 +765,19 @@ function AppShell() {
                 <span className="absolute top-2.5 right-2.5 text-[10px] font-serif font-bold uppercase bg-[#050812]/90 text-[#ffd875] border border-[#e7b73d]/40 px-2.5 py-1 rounded backdrop-blur-md">
                   {project.status}
                 </span>
+                {project.gallery && (
+                  <span className="absolute bottom-2.5 left-2.5 text-[10px] font-serif font-bold uppercase bg-[#050812]/90 text-[#ffd875] border border-[#e7b73d]/40 px-2 py-0.5 rounded backdrop-blur-md flex items-center gap-1.5 shadow-md">
+                    <ImageIcon size={12} className="text-[#e7b73d]" /> {project.gallery.length} System Views
+                  </span>
+                )}
               </div>
+
+              {project.institution && (
+                <div className="flex items-center gap-1.5 text-xs text-[#ffd875] font-serif font-bold mb-1.5 tracking-wide">
+                  <GraduationCap size={14} className="text-[#e7b73d] shrink-0" />
+                  <span>{project.institution}</span>
+                </div>
+              )}
 
               <div className="flex items-center justify-between text-xs font-serif text-[#e7b73d] mb-1">
                 <span>{project.id} · {project.house}</span>
@@ -697,7 +812,7 @@ function AppShell() {
               <div className="pt-3 border-t border-[#e7b73d]/20 flex items-center justify-between">
                 <button
                   type="button"
-                  onClick={() => setInspectProject(project)}
+                  onClick={() => openProjectInspect(project)}
                   className="text-xs font-serif uppercase tracking-wider text-[#dcd4be] hover:text-[#e7b73d] flex items-center gap-1.5 transition-colors"
                 >
                   <Eye size={14} /> Citadel Inspect
@@ -857,10 +972,18 @@ function AppShell() {
           aria-label={`${inspectProject.name} inspection preview`}
           onMouseDown={event => event.target === event.currentTarget && setInspectProject(null)}
         >
-          <div className="modal max-w-3xl">
+          <div className="modal max-w-4xl max-h-[92vh] overflow-y-auto">
             <div className="modal-head">
               <div>
-                <div className="eyebrow-realm">{inspectProject.house} // {inspectProject.status}</div>
+                <div className="eyebrow-realm">
+                  {inspectProject.house} // {inspectProject.status}
+                </div>
+                {inspectProject.institution && (
+                  <div className="flex items-center gap-1.5 text-xs text-[#ffd875] font-serif font-bold mt-1">
+                    <GraduationCap size={15} className="text-[#e7b73d]" />
+                    <span>{inspectProject.institution} · {inspectProject.contributionRole || 'Core Contributor'}</span>
+                  </div>
+                )}
                 <h3 className="text-white text-3xl font-serif font-bold uppercase mt-1">
                   {inspectProject.name}
                 </h3>
@@ -876,14 +999,99 @@ function AppShell() {
               </button>
             </div>
 
-            <div className="relative rounded overflow-hidden border border-[#e7b73d]/30 mb-5">
-              <img
-                src={assetUrl(inspectProject.image)}
-                alt={`${inspectProject.name} preview`}
-                className="w-full aspect-video object-cover"
-                loading="eager"
-              />
-            </div>
+            {/* Interactive Screenshot Gallery (if multiple views) or Single Preview */}
+            {inspectProject.gallery && inspectProject.gallery.length > 0 ? (
+              <div className="mb-5 space-y-3">
+                <div className="relative rounded overflow-hidden border border-[#e7b73d]/40 bg-[#02040a] group">
+                  <img
+                    src={assetUrl(inspectProject.gallery[galleryIdx]?.src || inspectProject.image)}
+                    alt={inspectProject.gallery[galleryIdx]?.title || inspectProject.name}
+                    className="w-full aspect-[16/10] sm:aspect-[16/9] object-contain bg-black/50"
+                    loading="eager"
+                  />
+
+                  {/* View counter pill */}
+                  <div className="absolute top-3 left-3 bg-[#050812]/90 border border-[#e7b73d]/50 text-[#ffd875] text-xs font-serif font-bold px-3 py-1 rounded backdrop-blur-md flex items-center gap-1.5">
+                    <ImageIcon size={13} />
+                    <span>View {galleryIdx + 1} of {inspectProject.gallery.length}</span>
+                  </div>
+
+                  {/* Navigation Chevrons */}
+                  {inspectProject.gallery.length > 1 && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setGalleryIdx((prev) => (prev === 0 ? inspectProject.gallery!.length - 1 : prev - 1))
+                        }
+                        className="absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-[#050812]/85 text-[#ffd875] hover:text-white border border-[#e7b73d]/40 flex items-center justify-center backdrop-blur transition-transform hover:scale-110"
+                        aria-label="Previous system view"
+                      >
+                        <ChevronLeft size={20} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setGalleryIdx((prev) => (prev === inspectProject.gallery!.length - 1 ? 0 : prev + 1))
+                        }
+                        className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-[#050812]/85 text-[#ffd875] hover:text-white border border-[#e7b73d]/40 flex items-center justify-center backdrop-blur transition-transform hover:scale-110"
+                        aria-label="Next system view"
+                      >
+                        <ChevronRight size={20} />
+                      </button>
+                    </>
+                  )}
+                </div>
+
+                {/* Active Screenshot Title & Description */}
+                {inspectProject.gallery[galleryIdx] && (
+                  <div className="p-3 bg-[#e7b73d]/10 border border-[#e7b73d]/30 rounded">
+                    <div className="text-sm font-serif font-bold text-[#ffd875] mb-1">
+                      📸 {inspectProject.gallery[galleryIdx].title}
+                    </div>
+                    <div className="text-xs text-[#ddd3bc] font-prose">
+                      {inspectProject.gallery[galleryIdx].caption}
+                    </div>
+                  </div>
+                )}
+
+                {/* Thumbnail strip */}
+                {inspectProject.gallery.length > 1 && (
+                  <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-thin">
+                    {inspectProject.gallery.map((item, gIndex) => (
+                      <button
+                        key={gIndex}
+                        type="button"
+                        onClick={() => setGalleryIdx(gIndex)}
+                        className={`relative shrink-0 w-24 h-16 rounded overflow-hidden border transition-all ${
+                          galleryIdx === gIndex
+                            ? 'border-[#ffd875] ring-2 ring-[#e7b73d]/70 scale-105'
+                            : 'border-[#e7b73d]/30 opacity-70 hover:opacity-100'
+                        }`}
+                      >
+                        <img
+                          src={assetUrl(item.src)}
+                          alt={item.title}
+                          className="w-full h-full object-cover"
+                        />
+                        <span className="absolute bottom-0 inset-x-0 bg-black/70 text-[9px] font-mono text-[#ffd875] text-center truncate px-0.5">
+                          #{gIndex + 1}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="relative rounded overflow-hidden border border-[#e7b73d]/30 mb-5">
+                <img
+                  src={assetUrl(inspectProject.image)}
+                  alt={`${inspectProject.name} preview`}
+                  className="w-full aspect-video object-cover"
+                  loading="eager"
+                />
+              </div>
+            )}
 
             <div className="space-y-4 text-[#ddd3bc] text-base font-prose">
               <p className="leading-relaxed">{inspectProject.type}</p>
@@ -907,7 +1115,7 @@ function AppShell() {
               </div>
             </div>
 
-            <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-[#e7b73d]/20">
+            <div className="flex flex-wrap items-center justify-between gap-3 mt-6 pt-4 border-t border-[#e7b73d]/20">
               <button
                 type="button"
                 onClick={() => setInspectProject(null)}
@@ -915,16 +1123,29 @@ function AppShell() {
               >
                 Close Scroll
               </button>
-              {inspectProject.liveUrl && (
-                <a
-                  href={inspectProject.liveUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="gold-button"
-                >
-                  <Sparkles size={14} /> Enter Live Realm <ArrowUpRight size={14} />
-                </a>
-              )}
+
+              <div className="flex flex-wrap items-center gap-2">
+                {inspectProject.secondaryUrl && (
+                  <a
+                    href={inspectProject.secondaryUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="outline-button text-xs flex items-center gap-1.5"
+                  >
+                    <ExternalLink size={14} className="text-[#e7b73d]" /> {inspectProject.secondaryUrlLabel || 'CoCIS Portal'}
+                  </a>
+                )}
+                {inspectProject.liveUrl && (
+                  <a
+                    href={inspectProject.liveUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="gold-button"
+                  >
+                    <Sparkles size={14} /> Enter Official Portal <ArrowUpRight size={14} />
+                  </a>
+                )}
+              </div>
             </div>
           </div>
         </div>
